@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+:root {
+  --font-pilcrow: "Pilcrow Rounded", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --font-roundo: "Roundo", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --font-sans: var(--font-pilcrow);
+}
+
+/* Dark theme (default) */
+[data-theme="dark"],
+:root:not([data-theme]) {
+  --background-dark: hsla(0, 0, 0, 100%);
+  --background: hsla(0, 0, 5, 100%);
+  --background-light: hsla(0, 0, 10, 100%);
+  --text-header: hsla(0, 0, 95, 100%);
+  --text-subheader: hsla(0, 0, 95, 75%);
+  --text-body: hsla(0, 0, 95, 50%);
+  --color-accent: hsla(60, 100, 50, 100%);
+  --color-accent-dark: hsla(60, 100, 45, 100%);
+  /* Dark theme: Dark scrollbar */
+  --scroll-thumb: hsla(0, 0, 20%, 0.6);
+  --scroll-thumb-hover: hsla(0, 0, 25%, 0.8);
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --background-dark: hsla(0, 0, 95, 100%);
+  --background: hsla(0, 0, 98, 100%);
+  --background-light: hsla(0, 0, 100, 100%);
+  --text-header: hsla(0, 0, 15, 100%);
+  --text-subheader: hsla(0, 0, 25, 100%);
+  --text-body: hsla(0, 0, 40, 100%);
+  --color-accent: hsl(150, 70%, 50%);
+  --color-accent-dark: hsl(150, 70%, 45%);
+  /* Light theme: Light scrollbar (unchanged) */
+  --scroll-thumb: rgba(100, 116, 139, 0.5);
+  --scroll-thumb-hover: rgba(100, 116, 139, 0.8);
+}
+
+@theme inline {
+  --color-background-dark: var(--background-dark);
+  --color-background: var(--background);
+  --color-background-light: var(--background-light);
+  --color-header: var(--text-header);
+  --color-subheader: var(--text-subheader);
+  --color-body: var(--text-body);
+  --color-accent: var(--color-accent);
+  --color-accent-dark: var(--color-accent-dark);
+  --color-warning: hsl(0, 100%, 60%);
+  --color-warning-dark: hsl(0, 80%, 40%);
+  --color-success: hsl(150, 70%, 45%);
+}
+
+.roundo {
+  font-family: var(--font-roundo);
+}
+
+@layer base {
+  body {
+    font-family: var(--font-pilcrow);
+    background: var(--background-dark);
+    color: var(--text-header);
+  }
+  
+  /* Force Tailwind classes to respect CSS vars */
+  .text-header { color: var(--text-header) !important; }
+  .text-subheader { color: var(--text-subheader) !important; }
+  .text-body { color: var(--text-body) !important; }
+  .bg-background-dark { background-color: var(--background-dark) !important; }
+  .bg-background { background-color: var(--background) !important; }
+  .bg-background-light { background-color: var(--background-light) !important; }
+}
+
+@layer components {
+  .sidebar-icon {
+    filter: none !important; /* Dark theme: keep white icons */
+  }
+  
+  [data-theme="light"] .sidebar-icon {
+    filter: invert(1) brightness(0) !important; /* Light theme: white → black */
+  }
+  
+  /* FIXED: More specific hover selector */
+  [data-theme="light"] .group:hover .sidebar-icon,
+  [data-theme="light"] .sidebar-icon:hover {
+    filter: invert(1) brightness(0) !important;
+  }
+}
+
+/* Scrollbar classes */
+.scroll-thin-muted {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+
+.scroll-thin-muted::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-thin-muted::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-thin-muted::-webkit-scrollbar-thumb {
+  background-color: var(--scroll-thumb);
+  border-radius: 9999px;
+}
+
+.scroll-thin-muted::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scroll-thumb-hover);
+}
