@@ -9,10 +9,12 @@ type Props = {
   title: string;
   amount: string;
   category: string;
+  date: string;
   amountType: 'income' | 'expense';
   onTitleChange: (v: string) => void;
   onAmountChange: (v: string) => void;
   onCategoryChange: (v: string) => void;
+  onDateChange: (v: string) => void;
   onAmountTypeChange: (v: 'income' | 'expense') => void;
   onClose: () => void;
   onSubmit: (e: FormEvent) => void;
@@ -35,10 +37,12 @@ export function EditTransactionModal({
   title,
   amount,
   category,
+  date,
   amountType,
   onTitleChange,
   onAmountChange,
   onCategoryChange,
+  onDateChange,
   onAmountTypeChange,
   onClose,
   onSubmit,
@@ -65,6 +69,10 @@ export function EditTransactionModal({
       setWarning('Please select a category');
       return false;
     }
+    if (!date) {
+      setWarning('Please select a date');
+      return false;
+    }
     setWarning('');
     return true;
   };
@@ -76,6 +84,10 @@ export function EditTransactionModal({
       onSubmit(e);
     }
   };
+
+  // Rimuove la parte del tempo dalla data
+  const spaceIndex = date.indexOf(' ');
+  date = spaceIndex > -1 ? date.substring(0, spaceIndex) : date;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background-dark/70">
@@ -163,7 +175,7 @@ export function EditTransactionModal({
             </div>
           </div>
 
-          {/* Griglia Amount + Category */}
+          {/* Griglia Amount + Date + Category */}
           <div className="grid grid-cols-2 gap-3">
             {/* Campo importo con simbolo € fisso */}
             <div className="space-y-1.5">
@@ -188,27 +200,43 @@ export function EditTransactionModal({
               </div>
             </div>
 
-            {/* Select categoria dinamica */}
+            {/* Campo data - ADDED SAME AS ADD MODAL */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-subheader">Category</label>
-              <select
-                className={`w-full rounded-lg bg-background border px-3 py-2.5 text-sm text-header leading-tight outline-none focus:border-accent focus:ring-1 focus:ring-accent/40 appearance-none transition-all ${
-                  !category && warning ? 'border-warning ring-1 ring-warning/40' : 'border-background-light'
+              <label className="block text-xs font-medium text-subheader">Date</label>
+              <input
+                type="date"
+                className={`w-full rounded-lg bg-background border px-4 py-2.5 text-sm text-header placeholder:text-subheader/60 outline-none focus:border-accent focus:ring-1 focus:ring-accent/40 transition-all data-invalid:border-warning data-invalid:ring-1 data-invalid:ring-warning/40 ${
+                  warning ? 'border-warning ring-1 ring-warning/40' : 'border-background-light'
                 }`}
-                value={category}
+                value={date}
                 onChange={(e) => {
-                  onCategoryChange(e.target.value);
+                  onDateChange(e.target.value);
                   if (warning) setWarning('');
                 }}
-              >
-                <option value="" disabled>Select category</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
+          </div>
+
+          {/* Select categoria dinamica */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-medium text-subheader">Category</label>
+            <select
+              className={`w-full rounded-lg bg-background border px-3 py-2.5 text-sm text-header leading-tight outline-none focus:border-accent focus:ring-1 focus:ring-accent/40 appearance-none transition-all ${
+                !category && warning ? 'border-warning ring-1 ring-warning/40' : 'border-background-light'
+              }`}
+              value={category}
+              onChange={(e) => {
+                onCategoryChange(e.target.value);
+                if (warning) setWarning('');
+              }}
+            >
+              <option value="" disabled>Select category</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Bottoni azioni */}

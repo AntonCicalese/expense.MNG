@@ -16,15 +16,22 @@ import { useMemo, useEffect, useState } from 'react';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-type Row = { id: string; amount: number; title: string; category: string; created?: string };
+type Row = { 
+  id: string; 
+  amount: number; 
+  title: string; 
+  category: string; 
+  date?: string;
+  created?: string;
+};
 
 export default function LineGraph({ rows }: { rows: Row[] }) {
   const [updateKey, setUpdateKey] = useState(0);
   const [isDarkTheme, setIsDarkTheme] = useState(true);
 
   // Colori tema-specifici per il grafico
-  const lightColor= "hsl(150, 70%, 45%)"
-  const darkColor= "hsl(60, 100%, 50%)"
+  const lightColor = "hsl(150, 70%, 45%)"
+  const darkColor = "hsl(60, 100%, 50%)"
 
   // Rileva cambiamenti tema tramite MutationObserver sull'HTML root
   useEffect(() => {
@@ -49,19 +56,31 @@ export default function LineGraph({ rows }: { rows: Row[] }) {
     // Colori specifici per tema corrente
     const colors = isDarkTheme 
       ? {
-          line: darkColor,     // Verde brillante su dark
+          line: darkColor,     // Giallo su dark
           fill: darkColor,
           point: darkColor,
         }
       : {
-          line: lightColor,    // Verde attenuato su light
+          line: lightColor,    // Verde su light
           fill: lightColor,
           point: lightColor,
         };
 
-    // Ordina cronologicamente e prende ultime 7 transazioni
+    // Primary sort by date, secondary sort by created timestamp
     const sortedChronological = [...rows]
-      .sort((a, b) => new Date(a.created || 0).getTime() - new Date(b.created || 0).getTime())
+      .sort((a, b) => {
+        // Primary: date field (transaction date)
+        const dateA = a.date ? new Date(a.date) : new Date(0);
+        const dateB = b.date ? new Date(b.date) : new Date(0);
+        if (dateA.getTime() !== dateB.getTime()) {
+          return dateA.getTime() - dateB.getTime();
+        }
+        
+        // Secondary: created timestamp (DB insertion time) for same date
+        const createdA = a.created ? new Date(a.created) : new Date(0);
+        const createdB = b.created ? new Date(b.created) : new Date(0);
+        return createdA.getTime() - createdB.getTime();
+      })
       .slice(-7);
     
     // Truncate titoli per labels X

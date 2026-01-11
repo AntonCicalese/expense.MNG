@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useMemo } from "react";
 import {
   createTransactionAsSuperuser,
   deleteTransactionAsSuperuser,
@@ -13,13 +13,33 @@ import { DeleteConfirmModal } from "@/components/transactions/DeleteConfirmModal
 import { useBalance } from "@/components/balanceContext";
 
 // Tipo per le righe della tabella transazioni
-type Row = { id: string; amount: number; title: string; category: string; created?: string }; 
+type Row = { 
+  id: string; 
+  amount: number; 
+  title: string; 
+  category: string; 
+  created?: string;
+  date?: string;
+}; 
 
 // Formatta importi numerici con localizzazione (es. 1000.50 → 1,000.50)
 function formatAmount(value: number) {
   return value.toLocaleString(undefined, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
+  });
+}
+
+// Formatta data per visualizzazione (prende prima della prima space)
+function formatDate(dateString?: string) {
+  if (!dateString) return "";
+  
+  const spaceIndex = dateString.indexOf(' ');
+  const dateOnly = spaceIndex > -1 ? dateString.substring(0, spaceIndex) : dateString;
+  return new Date(dateOnly).toLocaleDateString('en-EU', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
   });
 }
 
@@ -36,11 +56,28 @@ export default function Table({
 }) {
   const { refetchBalance } = useBalance();
 
+  const sortedRows = useMemo(() => {
+    return [...rows].sort((a, b) => {
+      // Primary: date field (transaction date)
+      const dateA = a.date ? new Date(a.date) : new Date(0);
+      const dateB = b.date ? new Date(b.date) : new Date(0);
+      if (dateA.getTime() !== dateB.getTime()) {
+        return dateB.getTime() - dateA.getTime(); // DESCENDENTE (più recenti prima)
+      }
+      
+      // Secondary: created timestamp (DB insertion time) for same date
+      const createdA = a.created ? new Date(a.created) : new Date(0);
+      const createdB = b.created ? new Date(b.created) : new Date(0);
+      return createdB.getTime() - createdA.getTime();
+    });
+  }, [rows]);
+
   // Stati per modal aggiunta transazione
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
+  const [date, setDate] = useState("");
   const [amountType, setAmountType] = useState<"income" | "expense">("income");
 
   // Stati per modal eliminazione
@@ -51,27 +88,32 @@ export default function Table({
   const [editTitle, setEditTitle] = useState("");
   const [editAmount, setEditAmount] = useState("");
   const [editCategory, setEditCategory] = useState("");
+  const [editDate, setEditDate] = useState("");
   const [editAmountType, setEditAmountType] = useState<'income' | 'expense'>('expense');
   const [originalAmount, setOriginalAmount] = useState<number>(0);
 
   // Gestisce submit form aggiunta nuova transazione
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!title || !amount || !category) return;
+    if (!title || !amount || !category || !date) return;
 
     const signedAmount = Number(amount) * (amountType === 'income' ? 1 : -1);
-    const created = await createTransactionAsSuperuser(signedAmount, title, category);
+    const created = await createTransactionAsSuperuser(
+      signedAmount, 
+      title, 
+      category,
+      date
+    );
     
     await updateUserBalance(signedAmount);
     await refetchBalance();
 
-    // Notifica parent con nuove righe (nuova + esistenti)
     onTransactionsChange?.([created, ...rows]);
 
-    // Reset form e chiude modal
     setTitle("");
     setAmount("");
     setCategory("");
+    setDate("");
     setIsOpen(false);
   }
 
@@ -86,7 +128,6 @@ export default function Table({
     await updateUserBalance(revertAmount);
     await refetchBalance();
     
-    // Notifica parent con righe filtrate (senza eliminata)
     onTransactionsChange?.(rows.filter((r) => r.id !== deleteId));
     
     setDeleteId(null);
@@ -98,6 +139,18 @@ export default function Table({
     setEditTitle(row.title);
     setEditAmount(Math.abs(row.amount).toString());
     setEditCategory(row.category ?? "");
+    
+    // Extract date at first space for date input
+    let dateValue = "";
+    if (row.date) {
+      const spaceIndex = row.date.indexOf(' ');
+      dateValue = spaceIndex > -1 ? row.date.substring(0, spaceIndex) : row.date;
+    } else if (row.created) {
+      const spaceIndex = row.created.indexOf(' ');
+      dateValue = spaceIndex > -1 ? row.created.substring(0, spaceIndex) : row.created;
+    }
+    setEditDate(dateValue);
+    
     setEditAmountType(row.amount >= 0 ? 'income' : 'expense');
     setOriginalAmount(row.amount);
   }
@@ -114,15 +167,20 @@ export default function Table({
       title: editTitle,
       amount: newAmount,
       category: editCategory,
+      date: editDate,
     });
     
     await updateUserBalance(delta);
     await refetchBalance();
 
-    // Notifica parent sostituendo riga modificata
     onTransactionsChange?.(rows.map((r) => (r.id === updated.id ? updated : r)));
     
     setEditRow(null);
+    setEditTitle("");
+    setEditAmount("");
+    setEditCategory("");
+    setEditDate("");
+    setEditAmountType('expense');
     setOriginalAmount(0);
   }
 
@@ -153,7 +211,7 @@ export default function Table({
         {/* Container righe con scroll personalizzato */}
         <div className={`h-${maxHeight} overflow-y-auto pr-1 scroll-thin-muted`}>
           <div className="flex flex-col divide-y divide-body/20">
-            {rows.map((row) => (
+            {sortedRows.map((row) => (
               <div
                 key={row.id}
                 className="group flex items-center py-3.5"
@@ -174,7 +232,7 @@ export default function Table({
                     )}
                   </svg>
                   <span className="block text-sm font-semibold text-accent leading-tight truncate">
-                    {formatAmount(Math.abs(row.amount))} $
+                    {formatAmount(Math.abs(row.amount))} €
                   </span>
                 </div>
 
@@ -189,14 +247,18 @@ export default function Table({
                 </div>
 
                 {/* Colonna titolo (flessibile) */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 pr-4">
                   <p className="text-sm text-header leading-snug truncate">
                     {row.title}
+                  </p>
+                  {/* Date column */}
+                  <p className="text-xs text-subheader mt-0.5 leading-tight">
+                    {formatDate(row.date || row.created)}
                   </p>
                 </div>
 
                 {/* Bottoni azioni (visibili solo su hover) */}
-                <div className="ml-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="ml-auto flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => openEdit(row)}
                     className="rounded-full px-2.5 py-1 text-[11px] text-subheader border border-background-light hover:bg-background-light"
@@ -205,9 +267,7 @@ export default function Table({
                   </button>
                   <button
                     onClick={() => setDeleteId(row.id)}
-                    className="rounded-full px-2.5 py-1 text-[11px] font-medium
-                              text-warning border border-warning-dark
-                              hover:bg-warning hover:text-background-light transition-colors"
+                    className="rounded-full px-2.5 py-1 text-[11px] font-medium text-warning border border-warning-dark hover:bg-warning hover:text-background-light transition-colors"
                   >
                     Delete
                   </button>
@@ -224,12 +284,20 @@ export default function Table({
         title={title}
         amount={amount}
         category={category}
+        date={date}
         amountType={amountType}
         onTitleChange={setTitle}
         onAmountChange={setAmount}
         onCategoryChange={setCategory}
+        onDateChange={setDate}
         onAmountTypeChange={setAmountType}
-        onClose={() => setIsOpen(false)}
+        onClose={() => {
+          setIsOpen(false);
+          setTitle("");
+          setAmount("");
+          setCategory("");
+          setDate("");
+        }}
         onSubmit={handleSubmit}
       />
 
@@ -246,12 +314,21 @@ export default function Table({
         title={editTitle}
         amount={editAmount}
         category={editCategory}
+        date={editDate}
         amountType={editAmountType}
         onTitleChange={setEditTitle}
         onAmountChange={setEditAmount}
         onCategoryChange={setEditCategory}
+        onDateChange={setEditDate}
         onAmountTypeChange={setEditAmountType}
-        onClose={() => setEditRow(null)}
+        onClose={() => {
+          setEditRow(null);
+          setEditTitle("");
+          setEditAmount("");
+          setEditCategory("");
+          setEditDate("");
+          setEditAmountType('expense');
+        }}
         onSubmit={handleEditSubmit}
       />
     </>

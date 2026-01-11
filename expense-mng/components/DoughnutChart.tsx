@@ -52,9 +52,9 @@ export default function DoughnutChart({ type }: DoughnutChartProps) {
     return () => observer.disconnect();
   }, []);
 
-  // Colori base per tema (TODO: completare valori X)
-  const lightColor = "hsl(150, 90%, X)";
-  const darkColor = "hsl(60, 70%, X)";
+  // Colori base per tema
+  const lightColor = "hsl(150, 90%, 50%)";
+  const darkColor = "hsl(60, 70%, 50%)";
 
   // Genera palette gradienti adattiva al tema (10 tonalità)
   const getDoughnutColors = () => {
@@ -65,24 +65,24 @@ export default function DoughnutChart({ type }: DoughnutChartProps) {
     const alphaSteps = ["50%", "45%", "40%", "35%", "30%", "25%", "20%", "15%", "10%", "5%"];
     
     // Crea 10 varianti hsla con alpha decrescente
-    return alphaSteps.map((a, i) => {
-      return baseColor.replace("X", a);
+    return alphaSteps.map((a) => {
+      return baseColor.replace("50%", a);
     });
   };
 
-  // Fetch transazioni e aggrega per categoria (ultimi 30 giorni)
+  // Fetch transazioni e aggrega per categoria (ultimi 30 giorni) - UPDATED TO USE DATE FIELD
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const transactions = await getTransactionsAsSuperuser();
       
-      // Filtra transazioni degli ultimi 30 giorni
+      // Filtra transazioni degli ultimi 30 giorni usando il campo 'date'
       const oneMonthAgo = new Date();
       oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
 
       const recentTransactions = transactions.filter((t: any) => {
-        const createdDate = new Date(t.created);
-        const isRecent = createdDate.getTime() >= oneMonthAgo.getTime();
+        const transactionDate = t.date ? new Date(t.date) : new Date(t.created);
+        const isRecent = transactionDate.getTime() >= oneMonthAgo.getTime();
         const isMatchingType = type === 'expenses' ? t.amount < 0 : t.amount >= 0;
         return isRecent && isMatchingType;
       });

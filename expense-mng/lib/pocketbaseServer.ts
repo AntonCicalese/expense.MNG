@@ -17,11 +17,17 @@ async function authAdmin() {
 export async function getTransactionsAsSuperuser() {
   await authAdmin();
 
-  // Recupera tutte le transazioni ordinate per data creazione (più recenti prima)
+  // Recupera tutte le transazioni ordinate per datetime field (più recenti prima)
   const records = await pb
     .collection("Transactions")
-    .getFullList<{ id: string; amount: number; title: string; category: string }>({
-      sort: "-created",
+    .getFullList<{
+      id: string; 
+      amount: number; 
+      title: string; 
+      category: string;
+      date: string; // ISO datetime string from PocketBase
+    }>({
+      sort: "-date",
     });
 
   return records;
@@ -31,23 +37,28 @@ export async function createTransactionAsSuperuser(
   amount: number,
   title: string,
   category: string,
+  date: string, // "YYYY-MM-DD" from HTML date input
 ) {
   await authAdmin();
   try {
-    // Crea nuova transazione nella collezione Transactions
+    // Convert YYYY-MM-DD to ISO datetime for PocketBase datetime field
+    const isoDateTime = date ? `${date}T00:00:00Z` : new Date().toISOString();
+    
+    // Crea nuova transazione nella collezione Transactions con datetime field
     const record = await pb.collection("Transactions").create<{
       id: string;
       amount: number;
       title: string;
       category: string;
+      date: string; // PocketBase stores as ISO datetime string
     }>({
       amount,
       title,
       category,
+      date: isoDateTime,
     });
     return record;
   } catch (err: any) {
-    // Logga errori di creazione con dettagli response se disponibile
     console.error("PB create error:", err?.response ?? err);
     throw err;
   }
@@ -55,15 +66,22 @@ export async function createTransactionAsSuperuser(
 
 export async function deleteTransactionAsSuperuser(id: string) {
   await authAdmin();
-  // Elimina transazione specifica usando l'ID
   await pb.collection("Transactions").delete(id);
 }
 
 export async function updateTransactionAsSuperuser(
   id: string,
-  data: { amount: number; title: string; category: string },
+  data: { 
+    amount: number; 
+    title: string; 
+    category: string;
+    date: string; // "YYYY-MM-DD" from UI
+  },
 ) {
   await authAdmin();
+
+  // Convert YYYY-MM-DD to ISO datetime for PocketBase datetime field
+  const isoDateTime = data.date ? `${data.date}T00:00:00Z` : new Date().toISOString();
 
   // Aggiorna transazione esistente con nuovi dati
   const record = await pb.collection("Transactions").update<{
@@ -71,7 +89,13 @@ export async function updateTransactionAsSuperuser(
     amount: number;
     title: string;
     category: string;
-  }>(id, data);
+    date: string; // ISO datetime from PocketBase
+  }>(id, {
+    amount: data.amount,
+    title: data.title,
+    category: data.category,
+    date: isoDateTime,
+  });
 
   return record;
 }
@@ -79,7 +103,6 @@ export async function updateTransactionAsSuperuser(
 export async function getUserBalance() {
   await authAdmin();
   
-  // Recupera il primo record userData (l'ultimo creato) per il balance corrente
   const record = await pb.collection('userData').getFirstListItem<{ balance: number }>( '', {
     sort: '-created',
   });
@@ -91,7 +114,6 @@ export async function updateUserBalance(delta: number) {
   await authAdmin();
   
   try {
-    // Recupera record userData corrente con typing completo
     const record = await pb.collection('userData').getFirstListItem<{ 
       id: string;
       balance: number;
@@ -99,7 +121,6 @@ export async function updateUserBalance(delta: number) {
       { sort: '-created' }
     );
     
-    // Calcola e aggiorna il nuovo balance sommando delta
     const newBalance = record.balance + delta;
     const updatedRecord = await pb.collection('userData').update<{ id: string; balance: number }>(record.id, {
       balance: newBalance
@@ -108,14 +129,12 @@ export async function updateUserBalance(delta: number) {
     return updatedRecord.balance;
   } catch (error: any) {
     if (error.status === 404) {
-      // Se non esiste userData, crea il primo record con balance iniziale = delta
       const newRecord = await pb.collection('userData').create<{ id: string; balance: number }>({
         balance: delta
       });
       return newRecord.balance;
     }
     
-    // Logga altri errori e li rilancia
     console.error('updateUserBalance error:', error);
     throw error;
   }
@@ -124,13 +143,11 @@ export async function updateUserBalance(delta: number) {
 export async function deleteAllTransactionsAsSuperuser() {
   await authAdmin();
   
-  // Elimina tutte le transazioni in batch
   const records = await pb.collection('Transactions').getFullList();
   for (const record of records) {
     await pb.collection('Transactions').delete(record.id);
   }
   
-  // Resetta balance utente a 0 (update se esiste, altrimenti create)
   try {
     const userData = await pb.collection('userData').getFirstListItem('');
     await pb.collection('userData').update(userData.id, { balance: 0 });
