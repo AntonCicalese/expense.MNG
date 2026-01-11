@@ -18,14 +18,16 @@ type Props = {
   onSubmit: (e: FormEvent) => void;
 };
 
-// Define categories based on type
+// Categorie predefinite per entrate
 const INCOME_CATEGORIES = [
   "Salary", "Freelance", "Bonus", "Investment", "Rental", "Gifts", "Other"
 ];
 
+// Categorie predefinite per uscite
 const EXPENSE_CATEGORIES = [
-  "Food", "Transportation", "Utilities", "Subscriptions", 
-  "Entertainment", "Shopping", "Healthcare", "Rent/Mortgage", "Education", "Other"
+  "Food", "Transportation", "Utilities", 
+  "Subscriptions", "Entertainment", "Shopping", 
+  "Healthcare", "Rent/Mortgage", "Education", "Other"
 ];
 
 export function EditTransactionModal({
@@ -43,12 +45,13 @@ export function EditTransactionModal({
 }: Props) {
   const [warning, setWarning] = useState('');
   
+  // Non renderizza nulla se non c'è riga da editare
   if (!row) return null;
 
-  // Get categories based on selected type
+  // Seleziona categorie basate sul tipo corrente
   const categories = amountType === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
-  // Validation function
+  // Validazione form con messaggi errore specifici
   const validateForm = (): boolean => {
     if (!title.trim()) {
       setWarning('Title is required');
@@ -66,6 +69,7 @@ export function EditTransactionModal({
     return true;
   };
 
+  // Gestisce submit con validazione preliminare
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
@@ -76,6 +80,7 @@ export function EditTransactionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background-dark/70">
       <div className="bg-background-light w-full max-w-sm rounded-2xl p-6 shadow-lg">
+        {/* Header modal con titolo e bottone close */}
         <div className="flex items-center justify-between mb-4">
           <div>
             <span className="block text-xs font-medium uppercase tracking-wide text-subheader">
@@ -93,16 +98,16 @@ export function EditTransactionModal({
           </button>
         </div>
 
-        {/* Warning message */}
+        {/* Messaggio errore con stile warning */}
         {warning && (
           <div className="mb-4 p-3 bg-warning/10 border border-warning/30 rounded-lg">
             <span className="text-xs text-warning font-medium">{warning}</span>
           </div>
         )}
 
-        {/* Form */}
+        {/* Form principale */}
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Title */}
+          {/* Campo titolo */}
           <div className="space-y-1.5">
             <label className="block text-xs font-medium text-subheader">Title</label>
             <input
@@ -119,7 +124,7 @@ export function EditTransactionModal({
             />
           </div>
 
-          {/* Income/Expense Selector */}
+          {/* Selettore Income/Expense */}
           <div className="space-y-1.5">
             <label className="block text-xs font-medium text-subheader">Type</label>
             <div className="grid grid-cols-2 grid-rows-1 gap-3 p-0 border border-transparent">
@@ -158,9 +163,9 @@ export function EditTransactionModal({
             </div>
           </div>
 
-          {/* Amount + Category */}
+          {/* Griglia Amount + Category */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Amount */}
+            {/* Campo importo con simbolo € fisso */}
             <div className="space-y-1.5">
               <label className="block text-xs font-medium text-subheader">Amount</label>
               <div className="relative">
@@ -183,7 +188,7 @@ export function EditTransactionModal({
               </div>
             </div>
 
-            {/* Category */}
+            {/* Select categoria dinamica */}
             <div className="space-y-1.5">
               <label className="block text-xs font-medium text-subheader">Category</label>
               <select
@@ -206,7 +211,7 @@ export function EditTransactionModal({
             </div>
           </div>
 
-          {/* Actions */}
+          {/* Bottoni azioni */}
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"

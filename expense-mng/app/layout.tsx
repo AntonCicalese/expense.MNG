@@ -12,7 +12,7 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   
-  // Helper function to check if current path starts with a base path
+  // Determina se path corrente è attivo (esatta o sottopath)
   const isActivePath = (path: string) => pathname === path || pathname.startsWith(`${path}/`);
   
   return (
@@ -25,15 +25,16 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased overflow-hidden">
+        {/* Navbar principale */}
         <div className="bg-background-light h-20 w-full flex items-center px-10">
-          {/* Left: Bigger brand text */}
+          {/* Logo brand a sinistra */}
           <div className="flex items-center">
             <Link href="/" className="text-2xl lg:text-3xl tracking-wide font-roundo text-header">
               EXPEN<span className="text-accent">$</span>E.MNG
             </Link>
           </div>
 
-          {/* Center: Home / Dashboard - Active page bigger */}
+          {/* Navigazione centrale Home/Dashboard */}
           <div className="flex-1 flex items-center justify-center gap-6 relative">
             <Link 
               href="/" 
@@ -64,11 +65,13 @@ export default function RootLayout({
             </Link>
           </div>
           
+          {/* Theme toggle a destra */}
           <div className="flex items-center justify-end gap-4 ml-auto">
             <ThemeToggle />
           </div>
         </div>
 
+        {/* Contenuto pagina principale */}
         {children}
       </body>
     </html>

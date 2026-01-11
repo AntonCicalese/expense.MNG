@@ -16,7 +16,7 @@ type Props = {
   onSubmit: (e: FormEvent) => void;
 };
 
-// Define categories based on type
+// Liste categorie per tipo transazione
 const INCOME_CATEGORIES = [
   "Salary", "Freelance", "Bonus", "Investment", "Rental", "Gifts", "Other"
 ];
@@ -41,12 +41,13 @@ export function AddTransactionModal({
 }: Props) {
   const [warning, setWarning] = useState('');
   
+  // Non renderizza nulla se modal chiusa
   if (!open) return null;
 
-  // Get categories based on selected type
+  // Seleziona categorie basate sul tipo selezionato
   const categories = amountType === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
-  // Validation function
+  // Validazione form prima del submit
   const validateForm = (): boolean => {
     if (!title.trim()) {
       setWarning('Title is required');
@@ -64,6 +65,7 @@ export function AddTransactionModal({
     return true;
   };
 
+  // Gestore submit con validazione
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
@@ -74,6 +76,7 @@ export function AddTransactionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background-dark/70">
       <div className="bg-background-light w-full max-w-sm rounded-2xl p-6 shadow-lg">
+        {/* Header modal */}
         <div className="flex items-center justify-between mb-4">
           <div>
             <span className="block text-xs font-medium uppercase tracking-wide text-subheader">
@@ -91,16 +94,16 @@ export function AddTransactionModal({
           </button>
         </div>
 
-        {/* Warning message */}
+        {/* Messaggio di errore */}
         {warning && (
           <div className="mb-4 p-3 bg-warning/10 border border-warning/30 rounded-lg">
             <span className="text-xs text-warning font-medium">{warning}</span>
           </div>
         )}
 
-        {/* Form */}
+        {/* Form principale */}
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Title */}
+          {/* Campo titolo */}
           <div className="space-y-1.5">
             <label className="block text-xs font-medium text-subheader">Title</label>
             <input
@@ -117,7 +120,7 @@ export function AddTransactionModal({
             />
           </div>
 
-          {/* Income/Expense Selector */}
+          {/* Toggle Income/Expense */}
           <div className="space-y-1.5">
             <label className="block text-xs font-medium text-subheader">Type</label>
             <div className="grid grid-cols-2 grid-rows-1 gap-3 p-0 border border-transparent">
@@ -156,9 +159,9 @@ export function AddTransactionModal({
             </div>
           </div>
 
-          {/* Amount + Category */}
+          {/* Griglia importo + categoria */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Amount */}
+            {/* Input importo con simbolo € */}
             <div className="space-y-1.5">
               <label className="block text-xs font-medium text-subheader">Amount</label>
               <div className="relative">
@@ -181,7 +184,7 @@ export function AddTransactionModal({
               </div>
             </div>
 
-            {/* Category */}
+            {/* Select categoria dinamica */}
             <div className="space-y-1.5">
               <label className="block text-xs font-medium text-subheader">Category</label>
               <select
@@ -204,7 +207,7 @@ export function AddTransactionModal({
             </div>
           </div>
 
-          {/* Actions */}
+          {/* Bottoni azioni */}
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"

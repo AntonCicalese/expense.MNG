@@ -4,11 +4,17 @@ import { useBalance } from "@/components/balanceContext";
 
 export default function WelcomeBoard() {
   const { balance, loading } = useBalance();
+  
+  // Controlla l'indice del carattere corrente per l'animazione di typing
   const [textIndex, setTextIndex] = useState(0);
+  
+  // Testo completo del benvenuto
   const fullText = 'Welcome back, Administrator';
+  
+  // Indice da cui inizia il testo accentuato ("Administrator")
   const accentStartIndex = 13;
 
-  // Typing animation only
+  // Animazione di typing: incrementa gradualmente textIndex fino alla lunghezza completa
   useEffect(() => {
     const timer = setInterval(() => {
       setTextIndex((prev) => {
@@ -23,8 +29,13 @@ export default function WelcomeBoard() {
     return () => clearInterval(timer);
   }, []);
 
+  // Slice del testo visualizzato in base all'avanzamento della typing animation
   const textSlice = fullText.slice(0, textIndex);
+  
+  // Flag per mostrare il cursore durante la typing
   const isTypingActive = textIndex < fullText.length;
+  
+  // Separa testo regolare da quello accentuato per styling diverso
   const accentText = textSlice.slice(accentStartIndex);
   const regularText = textSlice.slice(0, accentStartIndex);
 

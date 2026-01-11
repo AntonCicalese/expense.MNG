@@ -7,14 +7,15 @@ type Props = {
 };
 
 export function DeleteConfirmModal({ open, onCancel, onConfirm }: Props) {
+  // Non renderizza nulla se modal chiusa
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background-dark/70">
       <div className="bg-background-light w-full max-w-sm rounded-2xl p-6 shadow-lg">
-        {/* Make the row stretch and align items to stretch */}
+        {/* Layout flex orizzontale: icona + contenuto */}
         <div className="flex items-stretch gap-4">
-          {/* Icon column fills full height of text+buttons */}
+          {/* Colonna icona warning (altezza piena) */}
           <div className="flex items-center">
             <div className="flex h-full items-center">
               <div className="flex h-24 w-24 items-center justify-center rounded-full bg-warning/10 text-warning text-3xl font-semibold">
@@ -23,6 +24,7 @@ export function DeleteConfirmModal({ open, onCancel, onConfirm }: Props) {
             </div>
           </div>
 
+          {/* Contenuto principale: testo + bottoni */}
           <div className="flex-1 flex flex-col justify-between">
             <div>
               <span className="block text-sm font-semibold text-header">
@@ -33,12 +35,13 @@ export function DeleteConfirmModal({ open, onCancel, onConfirm }: Props) {
               </p>
             </div>
 
+            {/* Bottoni azioni allineati a destra */}
             <div className="mt-4 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={onCancel}
                 className="px-3.5 py-1.5 text-xs font-medium rounded-full border border-background-light text-subheader
-                           hover:bg-background-light hover:text-header transition-colors"
+                          hover:bg-background-light hover:text-header transition-colors"
               >
                 Cancel
               </button>
@@ -46,9 +49,9 @@ export function DeleteConfirmModal({ open, onCancel, onConfirm }: Props) {
                 type="button"
                 onClick={onConfirm}
                 className="px-4 py-1.5 text-xs font-medium rounded-full
-                           bg-warning text-background-dark
-                           hover:bg-warning-dark hover:text-background-light
-                           transition-colors"
+                          bg-warning text-background-dark
+                          hover:bg-warning-dark hover:text-background-light
+                          transition-colors"
               >
                 Delete
               </button>

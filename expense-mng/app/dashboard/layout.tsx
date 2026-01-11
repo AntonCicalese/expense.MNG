@@ -12,22 +12,21 @@ export default function RootLayout({
 }>) {
   return (
     <div className="flex h-screen bg-background-dark overflow-hidden">
-      {/* Side Navbar + Calculator */}
+      {/* Sidebar con navigazione e utility */}
       <div className="flex flex-col gap-4 w-1/5 h-full p-8 mt-2">
         <SideBarButton href="/dashboard" text="Dashboard" imagePath="/home.svg" />
         <SideBarButton href="/dashboard/dataEntries" text="Data Entries" imagePath="/table.svg" />
         <SideBarButton href="/dashboard/manageData" text="Manage Data" imagePath="/data.svg" />
         <Clock/>
         <Calculator />
-        {/* Full Calculator - under sidebar buttons */}
       </div>
 
-      {/* Vertical separator */}
+      {/* Separatore verticale tra sidebar e contenuto */}
       <div className="flex items-center py-8 px-2 mb-8">
         <div className="w-px h-5/6 bg-header" />
       </div>
 
-      {/* Main Dashboard */}
+      {/* Area principale dashboard con scroll */}
       <div className="grid grid-cols-3 w-full h-full overflow-auto">
         {children}
       </div>

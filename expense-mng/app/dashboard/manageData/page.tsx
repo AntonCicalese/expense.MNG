@@ -8,6 +8,7 @@ export default function Home() {
   const [showWarning, setShowWarning] = useState(false);
   const [error, setError] = useState('');
 
+  // Gestisce eliminazione completa transazioni + reset balance
   const handleDeleteAll = async () => {
     setIsDeleting(true);
     setError('');
@@ -24,7 +25,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background-dark p-12 font-pilcrow col-span-3">
-      {/* Danger zone header */}
+      {/* Header sezione Danger Zone */}
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-12">
           <div className="w-16 h-16 bg-warning/20 border-4 border-warning/40 rounded-2xl flex items-center justify-center animate-pulse">
@@ -40,7 +41,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Warning message - always visible */}
+        {/* Avviso permanente con dettagli conseguenze */}
         <div className="bg-warning/10 border-2 border-warning/30 rounded-3xl p-8 mb-12 shadow-2xl backdrop-blur-sm">
           <div className="flex items-start gap-4 mb-6">
             <div className="w-12 h-12 bg-warning/30 border-2 border-warning/50 rounded-2xl flex items-center justify-center shrink-0 mt-0.5">
@@ -66,14 +67,14 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Error message */}
+        {/* Messaggio errore se presente */}
         {error && (
           <div className="mb-8 p-4 bg-warning/20 border-2 border-warning/40 rounded-2xl backdrop-blur-sm">
             <span className="text-sm text-warning font-medium">{error}</span>
           </div>
         )}
 
-        {/* Delete button */}
+        {/* Primo step: bottone iniziale eliminazione */}
         {!showWarning ? (
           <div className="flex flex-col items-center gap-6 p-12 bg-background-light/50 border-2 border-dashed border-warning/30 rounded-3xl backdrop-blur-sm shadow-xl">
             <button
@@ -87,6 +88,7 @@ export default function Home() {
           </div>
 
         ) : (
+          /* Secondo step: conferma finale con spinner */
           <div className="bg-warning/20 backdrop-blur-xl p-12 rounded-3xl shadow-2xl border-4 border-warning/40">
             <div className="text-center text-header mb-8">
               <div className="w-24 h-24 bg-warning/40 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-warning/60">
@@ -128,7 +130,6 @@ export default function Home() {
                   </>
                 )}
               </button>
-
             </div>
           </div>
         )}

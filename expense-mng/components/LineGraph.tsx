@@ -22,50 +22,54 @@ export default function LineGraph({ rows }: { rows: Row[] }) {
   const [updateKey, setUpdateKey] = useState(0);
   const [isDarkTheme, setIsDarkTheme] = useState(true);
 
+  // Colori tema-specifici per il grafico
   const lightColor= "hsl(150, 70%, 45%)"
   const darkColor= "hsl(60, 100%, 50%)"
 
-  // Detect theme changes
+  // Rileva cambiamenti tema tramite MutationObserver sull'HTML root
   useEffect(() => {
     const checkTheme = () => {
       setIsDarkTheme(document.documentElement.getAttribute('data-theme') === 'dark');
     };
     
-    checkTheme(); // Initial check
+    checkTheme(); // Check iniziale
     const observer = new MutationObserver(checkTheme);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     
     return () => observer.disconnect();
   }, []);
 
-  // Update key when rows OR theme change
+  // Forza re-render grafico quando cambiano rows o tema
   useEffect(() => {
     console.log('ROWS FULLY CHANGED:', rows.length);
     setUpdateKey(prev => prev + 1);
   }, [rows, isDarkTheme]);
 
   const chartData = useMemo(() => {
-    // Theme-specific colors (HARD-CODED - Chart.js requirement)
+    // Colori specifici per tema corrente
     const colors = isDarkTheme 
       ? {
-          line: darkColor,     // Bright green on dark
+          line: darkColor,     // Verde brillante su dark
           fill: darkColor,
           point: darkColor,
         }
       : {
-          line: lightColor,     // Muted green on light
+          line: lightColor,    // Verde attenuato su light
           fill: lightColor,
           point: lightColor,
         };
 
+    // Ordina cronologicamente e prende ultime 7 transazioni
     const sortedChronological = [...rows]
       .sort((a, b) => new Date(a.created || 0).getTime() - new Date(b.created || 0).getTime())
       .slice(-7);
     
+    // Truncate titoli per labels X
     const labels = sortedChronological.map(row => 
       row.title.length > 12 ? `${row.title.substring(0, 12)}...` : row.title
     );
     
+    // Calcola balance cumulativo
     const transactionAmounts = sortedChronological.map(row => row.amount);
     const dataPoints = [0];
     let runningTotal = 0;

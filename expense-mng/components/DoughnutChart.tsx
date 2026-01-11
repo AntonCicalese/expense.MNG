@@ -39,7 +39,7 @@ export default function DoughnutChart({ type }: DoughnutChartProps) {
   
   const { balance, loading: balanceLoading } = useBalance();
 
-  // Theme detection (same as LineGraph)
+  // Rileva cambiamenti tema tramite MutationObserver su HTML root
   useEffect(() => {
     const checkTheme = () => {
       setIsDarkTheme(document.documentElement.getAttribute('data-theme') === 'dark');
@@ -52,31 +52,31 @@ export default function DoughnutChart({ type }: DoughnutChartProps) {
     return () => observer.disconnect();
   }, []);
 
+  // Colori base per tema (TODO: completare valori X)
   const lightColor = "hsl(150, 90%, X)";
   const darkColor = "hsl(60, 70%, X)";
 
-  // Theme-adaptive doughnut colors - generates 10 gradient shades from base theme color
+  // Genera palette gradienti adattiva al tema (10 tonalità)
   const getDoughnutColors = () => {
-    // Pick base color based on current theme
+    // Seleziona colore base in base al tema corrente
     const baseColor = isDarkTheme ? darkColor : lightColor; 
     
-    // Alpha/opacity steps for gradient effect (10 slices max)
+    // Gradiente con opacità decrescente per effetto sfumato
     const alphaSteps = ["50%", "45%", "40%", "35%", "30%", "25%", "20%", "15%", "10%", "5%"];
     
-    // Step 4: Generate 10 hsla colors with decreasing opacity
+    // Crea 10 varianti hsla con alpha decrescente
     return alphaSteps.map((a, i) => {
-      // hsla(150, 70%, 45%, 0.9), hsla(150, 70%, 45%, 0.85), etc.
       return baseColor.replace("X", a);
     });
-    // Result: Perfect gradient matching your LineGraph theme color!
   };
 
-
+  // Fetch transazioni e aggrega per categoria (ultimi 30 giorni)
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const transactions = await getTransactionsAsSuperuser();
       
+      // Filtra transazioni degli ultimi 30 giorni
       const oneMonthAgo = new Date();
       oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
 
@@ -87,6 +87,7 @@ export default function DoughnutChart({ type }: DoughnutChartProps) {
         return isRecent && isMatchingType;
       });
 
+      // Aggrega importi per categoria
       const categoryTotals: Record<string, number> = {};
       recentTransactions.forEach((t: any) => {
         const category = t.category;
@@ -100,24 +101,27 @@ export default function DoughnutChart({ type }: DoughnutChartProps) {
         labels,
         datasets: [{
           data: amounts,
-          backgroundColor: getDoughnutColors(), // Theme-adaptive colors
+          backgroundColor: getDoughnutColors(), // Colori adattivi al tema
           borderWidth: 0,
           hoverOffset: 8,
         }]
       };
 
+      // Gestisce caso no data
       setChartData(labels.length > 0 ? data : { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 0, hoverOffset: 4 }] });
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
     } finally {
       setLoading(false);
     }
-  }, [type, isDarkTheme]); // Add isDarkTheme dependency
+  }, [type, isDarkTheme]); // Dipende da tipo grafico e tema
 
+  // Fetch iniziale dati
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
+  // Refresh dati quando cambia balance (transazioni modificate)
   useEffect(() => {
     if (!balanceLoading && !loading) {
       const timer = setTimeout(() => fetchData(), 100);
@@ -128,7 +132,7 @@ export default function DoughnutChart({ type }: DoughnutChartProps) {
   const options: ChartOptions<'doughnut'> = {
     responsive: true,
     maintainAspectRatio: false,
-    cutout: '55%',
+    cutout: '55%', // Dimensione foro centrale
     layout: {
       padding: 8
     },
@@ -191,15 +195,18 @@ export default function DoughnutChart({ type }: DoughnutChartProps) {
       </div>
       <div className="flex-1 min-h-0 flex items-center justify-center p-4">
         {loading ? (
+          // Spinner di caricamento
           <div className="flex flex-col items-center text-body">
             <div className="w-12 h-12 border-4 border-background-light border-t-accent rounded-full animate-spin"></div>
             <span className="mt-4">Loading...</span>
           </div>
         ) : chartData.labels.length > 0 ? (
+          // Grafico doughnut con dati
           <div className="w-full h-full flex items-center justify-center">
             <Doughnut data={chartData} options={options} />
           </div>
         ) : (
+          // Stato vuoto con icona € stilizzata
           <div className="flex flex-col items-center text-body">
             <div className="w-20 h-20 bg-background-light rounded-full flex items-center justify-center mb-4">
               <span className="text-2xl">€</span>
