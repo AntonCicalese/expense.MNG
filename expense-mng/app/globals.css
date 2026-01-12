@@ -19,7 +19,6 @@
   --text-body: hsla(0, 0, 95, 50%);
   --color-accent: hsla(60, 100, 50, 100%);
   --color-accent-dark: hsla(60, 100, 45, 100%);
-  /* Dark theme: Dark scrollbar */
   --scroll-thumb: hsla(0, 0, 20%, 0.6);
   --scroll-thumb-hover: hsla(0, 0, 25%, 0.8);
 }
@@ -34,23 +33,8 @@
   --text-body: hsla(0, 0, 40, 100%);
   --color-accent: hsl(150, 70%, 50%);
   --color-accent-dark: hsl(150, 70%, 45%);
-  /* Light theme: Light scrollbar (unchanged) */
   --scroll-thumb: rgba(100, 116, 139, 0.5);
   --scroll-thumb-hover: rgba(100, 116, 139, 0.8);
-}
-
-@theme inline {
-  --color-background-dark: var(--background-dark);
-  --color-background: var(--background);
-  --color-background-light: var(--background-light);
-  --color-header: var(--text-header);
-  --color-subheader: var(--text-subheader);
-  --color-body: var(--text-body);
-  --color-accent: var(--color-accent);
-  --color-accent-dark: var(--color-accent-dark);
-  --color-warning: hsl(0, 100%, 60%);
-  --color-warning-dark: hsl(0, 80%, 40%);
-  --color-success: hsl(150, 70%, 45%);
 }
 
 .roundo {
@@ -137,4 +121,12 @@
 /* Firefox specific */
 [data-theme="dark"] input[type="date"]::-moz-calendar-picker-indicator {
   filter: invert(1);
+}
+
+.h-120 {
+    height: calc(var(--spacing) * 120) /* 30rem = 480px */;
+}
+
+.h-260 {
+    height: calc(var(--spacing) * 260) /* 65rem = 1040px */;
 }

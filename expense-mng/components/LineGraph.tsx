@@ -25,13 +25,9 @@ type Row = {
   created?: string;
 };
 
-export default function LineGraph({ rows }: { rows: Row[] }) {
+export default function LineGraph({ rows, lightColor, darkColor }: { rows: Row[], lightColor: string, darkColor: string }) {
   const [updateKey, setUpdateKey] = useState(0);
   const [isDarkTheme, setIsDarkTheme] = useState(true);
-
-  // Colori tema-specifici per il grafico
-  const lightColor = "hsl(150, 70%, 45%)"
-  const darkColor = "hsl(60, 100%, 50%)"
 
   // Rileva cambiamenti tema tramite MutationObserver sull'HTML root
   useEffect(() => {

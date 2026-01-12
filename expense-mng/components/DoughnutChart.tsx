@@ -27,9 +27,11 @@ type ChartType = 'expenses' | 'incomes';
 
 interface DoughnutChartProps {
   type: ChartType;
+  lightColor: string;
+  darkColor: string;
 }
 
-export default function DoughnutChart({ type }: DoughnutChartProps) {
+export default function DoughnutChart({ type, lightColor, darkColor }: DoughnutChartProps) {
   const [chartData, setChartData] = useState<ChartData>({ 
     labels: [], 
     datasets: [{ data: [], backgroundColor: [], borderWidth: 0, hoverOffset: 4 }] 
@@ -52,21 +54,17 @@ export default function DoughnutChart({ type }: DoughnutChartProps) {
     return () => observer.disconnect();
   }, []);
 
-  // Colori base per tema
-  const lightColor = "hsl(150, 90%, 50%)";
-  const darkColor = "hsl(60, 70%, 50%)";
-
   // Genera palette gradienti adattiva al tema (10 tonalità)
   const getDoughnutColors = () => {
     // Seleziona colore base in base al tema corrente
-    const baseColor = isDarkTheme ? darkColor : lightColor; 
+    const baseColor = isDarkTheme ? darkColor : lightColor;
     
     // Gradiente con opacità decrescente per effetto sfumato
     const alphaSteps = ["50%", "45%", "40%", "35%", "30%", "25%", "20%", "15%", "10%", "5%"];
     
     // Crea 10 varianti hsla con alpha decrescente
     return alphaSteps.map((a) => {
-      return baseColor.replace("50%", a);
+      return baseColor.replace("50%", a); // Original Alpha Value has to be 50%, otherwise specify correct value
     });
   };
 

@@ -24,9 +24,8 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
 
   // Funzione per switchare tra light/dark theme
   const toggleTheme = () => {
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    const themeValue = newTheme ? 'dark' : 'light';
+    setIsDark(!isDark);
+    const themeValue = !isDark ? 'dark' : 'light';
     
     // Salva preferenza in localStorage e aggiorna HTML root
     localStorage.setItem('theme', themeValue);

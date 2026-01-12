@@ -32,10 +32,10 @@ export default function Dashboard() {
         {/* Grid principale 2-colonne per componenti principali */}
         <div className="grid grid-cols-2 auto-rows-min w-full p-8 gap-8 col-span-2">
           <WelcomeBoard/>
-          <LineGraph rows={rows} />
+          <LineGraph rows={rows} lightColor={"hsl(150, 70%, 50%)"} darkColor={"hsl(60, 70%, 50%)"} />
           <Table 
             rows={rows} 
-            maxHeight="120" 
+            height="120" 
             colSpan="2" 
             onTransactionsChange={setRows} 
           />
@@ -43,8 +43,8 @@ export default function Dashboard() {
         
         {/* Grid secondaria 1-colonna per grafici doughnut */}
         <div className="grid grid-cols-1 auto-rows-min w-full p-8 gap-8 col-span-1">
-          <DoughnutChart type="expenses"/>
-          <DoughnutChart type="incomes"/>
+          <DoughnutChart type="expenses" lightColor={"hsl(150, 70%, 50%)"} darkColor={"hsl(60, 70%, 50%)"}/>
+          <DoughnutChart type="incomes" lightColor={"hsl(150, 70%, 50%)"} darkColor={"hsl(60, 70%, 50%)"}/>
         </div>
       </BalanceProvider>
     </>

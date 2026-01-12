@@ -7,10 +7,9 @@ import {
   updateTransactionAsSuperuser,
   updateUserBalance,
 } from "@/lib/pocketbaseServer";
-import { AddTransactionModal } from "@/components/transactions/AddTransactionModal";
-import { EditTransactionModal } from "@/components/transactions/EditTransactionModal";
 import { DeleteConfirmModal } from "@/components/transactions/DeleteConfirmModal";
 import { useBalance } from "@/components/balanceContext";
+import { TransactionModal } from "./transactions/TransactionModal";
 
 // Tipo per le righe della tabella transazioni
 type Row = { 
@@ -45,12 +44,12 @@ function formatDate(dateString?: string) {
 
 export default function Table({ 
   rows,
-  maxHeight,
+  height,
   colSpan, 
   onTransactionsChange
 }: { 
   rows: Row[];
-  maxHeight: string; 
+  height: string; 
   colSpan: string;
   onTransactionsChange?: (newRows: Row[]) => void
 }) {
@@ -74,6 +73,7 @@ export default function Table({
 
   // Stati per modal aggiunta transazione
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false)
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
@@ -135,6 +135,7 @@ export default function Table({
 
   // Apre modal edit popolando campi con dati riga selezionata
   function openEdit(row: Row) {
+    setIsEditOpen(true)
     setEditRow(row);
     setEditTitle(row.title);
     setEditAmount(Math.abs(row.amount).toString());
@@ -209,7 +210,7 @@ export default function Table({
         <div className="h-px w-full bg-body/40 mb-3" />
 
         {/* Container righe con scroll personalizzato */}
-        <div className={`h-${maxHeight} overflow-y-auto pr-1 scroll-thin-muted`}>
+        <div className={`h-${height} overflow-y-auto pr-1 scroll-thin-muted`}>
           <div className="flex flex-col divide-y divide-body/20">
             {sortedRows.map((row) => (
               <div
@@ -279,7 +280,8 @@ export default function Table({
       </div>
 
       {/* Modal per aggiunta nuova transazione */}
-      <AddTransactionModal
+      <TransactionModal
+        mode={"add"}
         open={isOpen}
         title={title}
         amount={amount}
@@ -309,7 +311,8 @@ export default function Table({
       />
 
       {/* Modal per modifica transazione */}
-      <EditTransactionModal
+      <TransactionModal
+        mode={"edit"}
         row={editRow}
         title={editTitle}
         amount={editAmount}
@@ -328,9 +331,8 @@ export default function Table({
           setEditCategory("");
           setEditDate("");
           setEditAmountType('expense');
-        }}
-        onSubmit={handleEditSubmit}
-      />
+        } }
+        onSubmit={handleEditSubmit} open={isEditOpen}      />
     </>
   );
 }

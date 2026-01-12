@@ -10,7 +10,7 @@ export default async function Home() {
     <BalanceProvider>
       {/* Grid full-width per visualizzazione tabella transazioni */}
       <div className="grid grid-cols-3 auto-rows-max w-full p-8 gap-8 col-span-3">
-        <Table rows={rows} maxHeight="260" colSpan="3"/>
+        <Table rows={rows} height="260" colSpan="3"/>
       </div>
     </BalanceProvider>
   );
